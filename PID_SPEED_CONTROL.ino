@@ -42,18 +42,19 @@ void setup()
 {
   Serial.begin(9600);
 
-  pinMode(ENCA_A, INPUT);
-  pinMode(ENCB_A, INPUT);
-  pinMode(PWM_A, OUTPUT);
-  pinMode(IN1_A, OUTPUT);
-  pinMode(IN2_A, OUTPUT);
+  pinMode(ENCA_A, INPUT);/////
+  pinMode(ENCB_A, INPUT);   //
+  pinMode(PWM_A, OUTPUT);   //  Define Pin Mode for Motor A
+  pinMode(IN1_A, OUTPUT);   //
+  pinMode(IN2_A, OUTPUT);/////
 
-  pinMode(ENCA_B, INPUT);
-  pinMode(ENCB_B, INPUT);
-  pinMode(PWM_B, OUTPUT);
-  pinMode(IN1_B, OUTPUT);
-  pinMode(IN2_B, OUTPUT);
+  pinMode(ENCA_B, INPUT);/////
+  pinMode(ENCB_B, INPUT);   //
+  pinMode(PWM_B, OUTPUT);   //  Define Pin Mode for Motor B
+  pinMode(IN1_B, OUTPUT);   //
+  pinMode(IN2_B, OUTPUT);/////
 
+  /////////Interrupts to Read Output from the Encoders///////////
   attachInterrupt(digitalPinToInterrupt(ENCA_A),
                   readEncoder_A, RISING);
 
@@ -100,6 +101,7 @@ void loop() {
   float kd = 04.75;
   float ki = 36.75;
 
+  //Calculate the function for both the motors
   float e_A = vt - Va_Filt;
   float de_Adt = (e_A - eprev_A) / (deltaT);
   eintegral_A = eintegral_A + e_A * deltaT;
@@ -110,31 +112,34 @@ void loop() {
   eintegral_B = eintegral_B + e_B * deltaT;
   float u_B = kp * e_B + kd * de_Bdt + ki * eintegral_B;
 
-  // Set motors speeds and directions
+  // Set 'Motor A' Direction and Speed //
+  //Direction 
   int dir_A = 1;
   if ( u_A < 0 ) {
     dir_A = -1;
   }
-
+  //Speed
   int pwr_A = (int) fabs(u_A);
   if (pwr_A > 255) {
     pwr_A = 255;
   }
 
-  //
-  float voltage_A = (float) pwr_A*dir_A;
-  voltage_A = 12.0 * voltage_A/255.0;
-
+  // Set 'Motor B' Direction and Speed //
+  //Direction
   int dir_B = 1;
   if ( u_B < 0 ) {
     dir_B = -1;
   }
-
+  //Speed
   int pwr_B = (int) fabs(u_B);
   if (pwr_B > 255) {
     pwr_B = 255;
   }
 
+  //Compute the voltage applied across Motor A
+  float voltage_A = (float) pwr_A*dir_A;
+  voltage_A = 12.0 * voltage_A/255.0;
+  //Compute the voltage applied across Motor B
   float voltage_B = (float) pwr_B*dir_B;
   voltage_B = 12.0 * voltage_B/255.0;
 
@@ -148,8 +153,8 @@ void loop() {
   Serial.print("Target_Velocity:");   Serial.print(vt);        Serial.print(", ");
   Serial.print("Voltage_A:");         Serial.print(voltage_A); Serial.print(", ");
   Serial.print("Voltage_B:");         Serial.print(voltage_B); Serial.print(", ");
-  Serial.print("velocity_Motor_A:");  Serial.print(Va_Filt);   Serial.print(", ");
-  Serial.print("velocity_Motor_B:");  Serial.print(Vb_Filt);   Serial.print(", ");
+  Serial.print("Velocity_Motor_A:");  Serial.print(Va_Filt);   Serial.print(", ");
+  Serial.print("Velocity_Motor_B:");  Serial.print(Vb_Filt);   Serial.print(", ");
   Serial.println();
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -195,7 +200,9 @@ void setMotor_B(int dir, int pwmVal, int pwm, int in1, int in2) {
     digitalWrite(in2, LOW);
   }
 }
-//
+
+///////////////Interrupt Service Routines////////////////
+////////////////////ISR for Motor A//////////////////////
 void readEncoder_A() {
 
   int increment = 0;
@@ -210,6 +217,7 @@ void readEncoder_A() {
   pos_A_i = pos_A_i + increment;
 }
 
+//////////////////ISR for Motor B////////////////////////
 void readEncoder_B() {
 
   int increment = 0;
